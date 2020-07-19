@@ -15,7 +15,9 @@ namespace forex_quotes
         static async Task Main(string[] args)
         {
             var url = "http://localhost:5002/api/forexprices/quote/USD_JPY";
+            var urlput = "http://localhost:5002/api/forexprices/USDJPY";
             var price = await GetAsync<ForexPriceDTO>(url);
+            var response = await PutAsync<ForexPriceDTO>(price,urlput);
             Console.WriteLine("Hello World!");
         }
 
@@ -31,6 +33,14 @@ namespace forex_quotes
             var stringPrice= JsonSerializer.Serialize<T>(dto);
             var stringPriceContent = new StringContent(stringPrice,UnicodeEncoding.UTF8,"application/json");
             var responsePriceBody = await client.PatchAsync(url,stringPriceContent);
+            return responsePriceBody;
+        }
+
+        static async Task<HttpResponseMessage> PutAsync<T>(T dto,string url)
+        {
+            var stringPrice= JsonSerializer.Serialize<T>(dto);
+            var stringPriceContent = new StringContent(stringPrice,UnicodeEncoding.UTF8,"application/json");
+            var responsePriceBody = await client.PutAsync(url,stringPriceContent);
             return responsePriceBody;
         }
 
