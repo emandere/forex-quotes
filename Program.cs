@@ -12,13 +12,65 @@ namespace forex_quotes
     class Program
     {
          static readonly HttpClient client = new HttpClient();
+
+         static List<string> pairs = new List<string>()
+        {
+            "AUDUSD",
+            "EURUSD",
+            "GBPUSD",
+            "NZDUSD",
+            "USDCAD",
+            "USDCHF",
+            "USDJPY"
+        };
+
+        static Dictionary<string,string> pairToInstrument= new Dictionary<string,string>()
+        {
+            {"AUDUSD","AUD_USD"},
+            {"EURUSD","EUR_USD"},
+            {"GBPUSD","GBP_USD"},
+            {"NZDUSD","NZD_USD"},
+            {"USDCAD","USD_CAD"},
+            {"USDCHF","USD_CHF"},
+            {"USDJPY","USD_JPY"},
+        };
         static async Task Main(string[] args)
         {
-            var url = "http://localhost:5002/api/forexprices/quote/USD_JPY";
-            var urlput = "http://localhost:5002/api/forexprices/USDJPY";
-            var price = await GetAsync<ForexPriceDTO>(url);
-            var response = await PutAsync<ForexPriceDTO>(price,urlput);
+            var url = "http://localhost:5002/api/forexprices/quote/";
+            var urlput = "http://localhost:5002/api/forexprices/";
+            var urlpost = "http://localhost:5002/api/forexprices/adddailyrealprices";
+            //var price = await GetAsync<ForexPriceDTO>(url);
+            //var response = await PutAsync<ForexPriceDTO>(price,urlput);
+            await GetQuotes(url,urlput,urlpost);
             Console.WriteLine("Hello World!");
+        }
+
+        static async Task GetQuotes(string url,string urlput,string urlpost)
+        {
+            while(true)
+            { 
+                try
+                {
+                    var prices = new List<ForexPriceDTO>();
+                    foreach(var pair in pairs)
+                    {
+                        var urlputpair = urlput + pair;
+                        var urlpair = url + pairToInstrument[pair];
+                        var price = await GetAsync<ForexPriceDTO>(urlpair);
+                        var responsePUT = await PutAsync<ForexPriceDTO>(price,urlputpair);
+
+                        prices.Add(price);
+                    }
+
+                    var responsePOST = await PostAsync<List<ForexPriceDTO>>(prices,urlpost);
+                    Console.WriteLine("Pairs updated");
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                await Task.Delay(1000 * 10);
+            }
         }
 
         static async Task<T> GetAsync<T>(string url)
