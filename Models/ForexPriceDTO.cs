@@ -2,6 +2,11 @@ using System;
 using System.Text.Json.Serialization;
 namespace forex_quotes.Models
 {
+    public class ForexPricesDTO
+    {
+        [JsonPropertyName("prices")]
+        public ForexPriceDTO [] priceDTOs{get;set;}
+    }
     public  class ForexPriceDTO
     {
         [JsonPropertyName("instrument")]
