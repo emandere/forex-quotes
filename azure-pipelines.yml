@@ -11,8 +11,8 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
-  x86ImageName: 'emandere/forex-quote-x86'
-  armImageName: 'emandere/forex-quote-arm'
+  x86ImageName: 'emandere/forex-quotes-x86'
+  armImageName: 'emandere/forex-quotes-arm'
 
 stages:
 - stage: Build
