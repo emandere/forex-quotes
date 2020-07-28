@@ -11,8 +11,12 @@ resources:
 
 variables:
   tag: '$(Build.BuildId)'
+  releaseTag: '$(Build.BuildNumber)'
   x86ImageName: 'emandere/forex-quotes-x86'
   armImageName: 'emandere/forex-quotes-arm'
+  DeploymentPath: '/home/emandere/deployments/forex-quotes/$(releaseTag)'
+  GitHubDeploymentPath: 'https://raw.githubusercontent.com/emandere/forex-quotes/master/deployment.yaml'
+  DeploymentConfigPath: '/home/emandere/deployments/forex-quotes/$(releaseTag)/deployment.yaml'
 
 stages:
 - stage: Build
@@ -41,3 +45,48 @@ stages:
         containerRegistry: 'dockerhub'
         tags: |
           $(tag)
+- stage: Deploy
+  jobs:
+    # track deployments on the environment
+  - deployment: WSL_Linux
+    pool:
+      name: LocalLinux
+    # creates an environment if it doesn’t exist
+    environment: 'forex-quotes'
+    strategy:
+      # default deployment strategy
+      runOnce:
+        deploy:
+          steps:
+            - bash: |
+                # Write your commands here
+
+                echo $(releaseTag)
+
+                sudo mkdir -p $(DeploymentPath)
+                
+                sudo rm -f $(DeploymentPath)/*
+                
+                sudo chmod 775 $(DeploymentPath)
+                
+                sudo wget -q $(GitHubDeploymentPath) -P  $(DeploymentPath)
+                
+                sudo sed -i 's/{platform}/x86/'  $(DeploymentConfigPath)
+                
+                sudo sed -i 's/{buildId}/$(Build.BuildId)/'  $(DeploymentConfigPath)
+                
+                
+              displayName: 'Set up artifacts'
+
+            - bash: |
+                # Write your commands here
+            
+                sudo k3s kubectl apply -f  $(DeploymentConfigPath)
+              
+              displayName: 'Deploy Release'
+            - bash: |
+                # Write your commands here
+          
+                sudo k3s kubectl rollout status deployment.v1.apps/forex-quotes
+            
+              displayName: 'Verify Release'
