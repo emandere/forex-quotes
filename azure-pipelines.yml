@@ -91,10 +91,7 @@ stages:
             
               displayName: 'Verify Release'
 
-- stage: DeployARM
-  displayName: Deploy ARM
-  jobs:  
-    displayName: Deploy ARM
+  - deployment: AWS_ARM
     pool:
       vmImage: 'ubuntu-latest'
     environment: 'forex-import'
