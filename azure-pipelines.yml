@@ -12,11 +12,12 @@ resources:
 variables:
   tag: '$(Build.BuildId)'
   releaseTag: '$(Build.BuildNumber)'
-  x86ImageName: 'emandere/forex-quotes-x86'
-  armImageName: 'emandere/forex-quotes-arm'
-  DeploymentPath: '/home/emandere/deployments/forex-quotes/$(releaseTag)'
-  GitHubDeploymentPath: 'https://raw.githubusercontent.com/emandere/forex-quotes/master/deployment.yaml'
-  DeploymentConfigPath: '/home/emandere/deployments/forex-quotes/$(releaseTag)/deployment.yaml'
+  serviceName: 'forex-quotes'
+  x86ImageName: 'emandere/$(serviceName)-x86'
+  armImageName: 'emandere/$(serviceName)-arm'
+  DeploymentPath: '/home/emandere/deployments/$(serviceName)/$(releaseTag)'
+  GitHubDeploymentPath: 'https://raw.githubusercontent.com/emandere/$(serviceName)/master/deployment.yaml'
+  DeploymentConfigPath: '/home/emandere/deployments/$(serviceName)/$(releaseTag)/deployment.yaml'
 
 stages:
 - stage: Build
@@ -52,7 +53,7 @@ stages:
     pool:
       name: LocalLinux
     # creates an environment if it doesn’t exist
-    environment: 'forex-quotes'
+    environment: '$(serviceName)'
     strategy:
       # default deployment strategy
       runOnce:
@@ -87,14 +88,14 @@ stages:
             - bash: |
                 # Write your commands here
           
-                sudo k3s kubectl rollout status deployment.v1.apps/forex-quotes
+                sudo k3s kubectl rollout status deployment.v1.apps/$(serviceName)
             
               displayName: 'Verify Release'
 
   - deployment: AWS_ARM
     pool:
       vmImage: 'ubuntu-latest'
-    environment: 'forex-import'
+    environment: '$(serviceName)'
     strategy:
       # default deployment strategy
       runOnce:
@@ -125,6 +126,6 @@ stages:
               displayName: 'Verify Release'
               inputs:
                 sshEndpoint: 'aws-arm'
-                commands: 'k3s kubectl rollout status deployment.v1.apps/forex-quotes'
+                commands: 'k3s kubectl rollout status deployment.v1.apps/$(serviceName)'
                         
             
