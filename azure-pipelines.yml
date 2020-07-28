@@ -90,3 +90,34 @@ stages:
                 sudo k3s kubectl rollout status deployment.v1.apps/forex-quotes
             
               displayName: 'Verify Release'
+
+- stage: DeployARM
+  displayName: Deploy ARM
+  jobs:  
+    displayName: Deploy ARM
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: 'forex-import'
+    strategy:
+      # default deployment strategy
+      runOnce:
+        deploy:
+          steps:
+            - task: SSH@0
+              displayName: 'Set up release artifacts'
+              inputs:
+                sshEndpoint: 'aws-arm'
+                commands: |
+                  mkdir -p $(DeploymentPath)
+                  
+                  rm -f $(DeploymentPath)/*
+                  
+                  chmod 775 $(DeploymentPath)
+                  
+                  wget -q $(GitHubDeploymentPath) -P  $(DeploymentPath)
+                  
+                  sed -i 's/{platform}/arm/'  $(DeploymentConfigPath)
+                  
+                  sed -i 's/{buildId}/$(Build.BuildId)/'  $(DeploymentConfigPath)
+                        
+            
