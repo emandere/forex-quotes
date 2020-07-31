@@ -50,49 +50,6 @@ stages:
 - stage: Deploy
   jobs:
     # track deployments on the environment
-  - deployment: WSL_Linux
-    pool:
-      name: LocalLinux
-    # creates an environment if it doesn’t exist
-    environment: '$(serviceName)'
-    strategy:
-      # default deployment strategy
-      runOnce:
-        deploy:
-          steps:
-            - bash: |
-                # Write your commands here
-
-                echo $(releaseTag)
-
-                sudo mkdir -p $(DeploymentPath)
-                
-                sudo rm -f $(DeploymentPath)/*
-                
-                sudo chmod 775 $(DeploymentPath)
-                
-                sudo wget -q $(GitHubDeploymentPath) -P  $(DeploymentPath)
-                
-                sudo sed -i 's/{platform}/x86/'  $(DeploymentConfigPath)
-                
-                sudo sed -i 's/{buildId}/$(Build.BuildId)/'  $(DeploymentConfigPath)
-                
-                
-              displayName: 'Set up artifacts'
-
-            - bash: |
-                # Write your commands here
-            
-                sudo k3s kubectl apply -f  $(DeploymentConfigPath)
-              
-              displayName: 'Deploy Release'
-            - bash: |
-                # Write your commands here
-          
-                sudo k3s kubectl rollout status deployment.v1.apps/$(serviceName)
-            
-              displayName: 'Verify Release'
-
   - deployment: AWS_ARM
     pool:
       vmImage: 'ubuntu-latest'
